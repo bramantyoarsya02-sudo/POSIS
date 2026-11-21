@@ -9,21 +9,33 @@
       "maxDuration": 30
     }
   },
-  "routes": [
+  "env": {
+    "APP_NAME": "POSIS SMKN 1 Ciomas",
+    "APP_ENV": "production",
+    "APP_DEBUG": "true",
+    "APP_KEY": "base64:fH7+9Fm4B93e4Z782qP21mK8s0yU92l0V30vW11aM7I=",
+    "APP_CONFIG_CACHE": "/tmp/config.php",
+    "APP_EVENTS_CACHE": "/tmp/events.php",
+    "APP_PACKAGES_CACHE": "/tmp/packages.php",
+    "APP_ROUTES_CACHE": "/tmp/routes.php",
+    "APP_SERVICES_CACHE": "/tmp/services.php",
+    "VIEW_COMPILED_PATH": "/tmp",
+    "CACHE_STORE": "file",
+    "SESSION_DRIVER": "cookie",
+    "LOG_CHANNEL": "stderr"
+  },
+  "rewrites": [
     {
-      "src": "/api/test",
-      "dest": "/api/test.php"
+      "source": "/api/test",
+      "destination": "/api/test.php"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.php"
+      "source": "/api/(.*)",
+      "destination": "/api/index.php"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
