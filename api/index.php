@@ -53,5 +53,16 @@ if (!file_exists($backendPath . '/vendor/autoload.php')) {
     exit;
 }
 
-// Teruskan seluruh request API ke backend Laravel
-require $backendPath . '/public/index.php';
+try {
+    require $backendPath . '/public/index.php';
+} catch (\Throwable $e) {
+    header('Content-Type: application/json', true, 500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => explode("\n", $e->getTraceAsString())
+    ]);
+    exit;
+}
