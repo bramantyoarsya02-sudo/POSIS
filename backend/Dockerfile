@@ -42,3 +42,4 @@ EXPOSE 8000
 
 # Start Laravel server using dynamic PORT from Render
 CMD ["sh", "-c", "php artisan config:clear && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+
