@@ -1,8 +1,8 @@
 {
   "name": "posis-smkn1ciomas",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "build": "npm --prefix frontend install && npm --prefix frontend run build"
   }
 }
-
