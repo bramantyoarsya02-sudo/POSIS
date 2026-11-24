@@ -1,61 +1,56 @@
 # POSIS — Pusat Olah Suara & Informasi Siswa
 ### Portal Resmi SMK Negeri 1 Ciomas
 
-Aplikasi Lost & Found (Barang Hilang / Ditemukan) dan Kotak Saran / Aspirasi Siswa berbasis Web Modern.
+Aplikasi Lost & Found (Barang Hilang / Ditemukan) dan Kotak Saran / Aspirasi Siswa berbasis Web Modern (React + Node.js Express + Supabase PostgreSQL).
 
 ---
 
 ## 🚀 Tech Stack
 
 - **Frontend:** React 19, Vite, Tailwind CSS, Framer Motion, React Router v7, Lucide Icons
-- **Backend:** Node.js, Express.js (Serverless API ready for Vercel)
-- **Database:** Supabase PostgreSQL
-- **Hosting:** Vercel (Frontend SPA + Serverless Backend API dalam satu proyek)
+- **Backend:** Node.js, Express.js (Vercel Serverless Function)
+- **Database:** Supabase PostgreSQL (57 Akun Siswa & Guru terintegrasi)
+- **Hosting:** Vercel (Frontend & Serverless Backend dalam 1 Proyek)
 
 ---
 
-## 🛠️ Panduan Menjalankan Secara Lokal (Development)
+## 🔑 Environment Variables untuk Vercel:
 
-1. **Clone Repository:**
-   ```bash
-   git clone https://github.com/bramantyoarsya02-sudo/POSIS.git
-   cd POSIS
-   ```
+Tambahkan 2 variabel ini di **Project Settings -> Environment Variables** di Vercel:
 
-2. **Install Dependensi:**
+| Key | Value |
+| :--- | :--- |
+| `SUPABASE_URL` | `https://xfredskwnysatcxzzufx.supabase.co` |
+| `SUPABASE_KEY` | *(Gunakan sb_secret_... Supabase Anda)* |
+
+---
+
+## 👥 Akun yang Siap Digunakan (57 Siswa Terdaftar):
+
+- **Administrator:** `admin@smkn1ciomas.sch.id` | Kata Sandi: `admin123`
+- **Siswa Uji Coba 1:** `siswa@smkn1ciomas.sch.id` (atau NISN: `0067823910`) | Kata Sandi: `siswa123`
+- **Pengurus OSIS:** `osis@smkn1ciomas.sch.id` (atau NISN: `0071293845`) | Kata Sandi: `adminosis123` / `siswa123`
+- **Petugas Piket:** `piket@smkn1ciomas.sch.id` | Kata Sandi: `adminpiket123` / `siswa123`
+- **Guru Pembina:** `guru@smkn1ciomas.sch.id` | Kata Sandi: `adminguru123` / `siswa123`
+- **Seluruh 50+ Siswa Lainnya:** Bisa login langsung menggunakan **NISN** atau **Email Siswa** (misal: `siswa01@smkn1ciomas.sch.id`, `0070001001`) dengan kata sandi: `siswa123`.
+
+---
+
+## 🛠️ Jalankan Secara Lokal (Development)
+
+1. **Install Dependensi:**
    ```bash
    npm install
    cd frontend && npm install && cd ..
    ```
 
-3. **Jalankan Backend & Frontend:**
-   - Terminal 1 (Backend API Port 8000):
+2. **Jalankan Aplikasi:**
+   - Terminal 1 (Backend API):
      ```bash
-     node api/index.js
+     npm start
      ```
    - Terminal 2 (Frontend React):
      ```bash
      cd frontend
      npm run dev
      ```
-
----
-
-## ☁️ Panduan Deploy ke Vercel (100% Gratis & Otomatis)
-
-1. Buka dashboard [Vercel](https://vercel.com/) dan klik **Add New...** -> **Project**.
-2. Pilih repository: `bramantyoarsya02-sudo/POSIS`.
-3. Biarkan **Root Directory** tetap `./`.
-4. (Opsional) Tambahkan Environment Variable di Vercel jika ingin menghubungkan ke Supabase:
-   - `DATABASE_URL`: `postgresql://postgres:PASSWORD@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres`
-   *(Jika tidak diisi, backend otomatis menggunakan in-memory seed data sehingga aplikasi tetap berjalan 100% lancar).*
-5. Klik **Deploy**!
-6. Selesai! Web Anda langsung aktif dan dapat diakses publik.
-
----
-
-## 👤 Akun Uji Coba Default:
-- **Admin:** `admin@smkn1ciomas.sch.id` / `admin123`
-- **Siswa:** `siswa@smkn1ciomas.sch.id` / `siswa123` (NISN: `0067823910`)
-- **OSIS:** `osis@smkn1ciomas.sch.id` / `adminosis123`
-- **Piket:** `piket@smkn1ciomas.sch.id` / `adminpiket123`
