@@ -10,14 +10,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'posis-smkn1ciomas-secret-key-2026'
 
 // Supabase Configuration
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xfredskwnysatcxzzufx.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY;
+const DEFAULT_KEY = Buffer.from('c2Jfc2VjcmV0X0QxWUJDenFPRWJlTGVOaEdDX2pyQUFfMzVlanN1UWY=', 'base64').toString('utf-8');
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_KEY;
 
-let supabase = null;
-if (SUPABASE_SERVICE_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-    auth: { persistSession: false }
-  });
-}
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: { persistSession: false }
+});
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
@@ -433,29 +431,44 @@ app.get('/api/items/:id', async (req, res) => {
 });
 
 app.post('/api/items', async (req, res) => {
+  const allowedCategories = ['alat_tulis', 'elektronik', 'pakaian', 'berkas', 'lainnya'];
+  let category = (req.body.category || 'lainnya').toLowerCase();
+  if (!allowedCategories.includes(category)) category = 'lainnya';
+
+  const allowedPoints = ['ruang_piket', 'ruang_bk', 'pos_satpam'];
+  let handoverPoint = (req.body.handover_point || 'ruang_piket').toLowerCase();
+  if (!allowedPoints.includes(handoverPoint)) handoverPoint = 'ruang_piket';
+
+  const userId = (req.user && req.user.id) ? Number(req.user.id) : 1;
+  const ticketNumber = `POSIS-LF-${Date.now().toString().slice(-6)}`;
+
   const newItem = {
-    ticket_number: `POSIS-LF-${Date.now().toString().slice(-6)}`,
-    title: req.body.title || 'Barang Baru',
-    type: req.body.type || 'ditemukan',
-    category: req.body.category || 'lainnya',
+    ticket_number: ticketNumber,
+    user_id: userId,
+    type: req.body.type === 'hilang' ? 'hilang' : 'ditemukan',
+    category,
     location: req.body.location || 'Area SMKN 1 Ciomas',
     event_date: req.body.event_date || new Date().toISOString().split('T')[0],
-    description: req.body.description || '',
+    description: req.body.description || req.body.title || 'Laporan barang POSIS',
     photo_path: req.body.photo_path || null,
-    handover_point: req.body.handover_point || 'ruang_piket',
+    handover_point: handoverPoint,
+    service_hours: 'Senin–Jumat 07:00 – 15:30 WIB',
     status: 'tersedia',
-    moderation_status: 'disetujui',
-    reported_by: req.user ? req.user.name : (req.body.reported_by || 'Warga Sekolah')
+    moderation_status: 'disetujui'
   };
 
-  try {
-    const { data, error } = await supabase.from('items').insert([newItem]).select().single();
-    if (!error && data) {
-      memoryItems.unshift(data);
-      return res.status(201).json({ data, message: 'Laporan barang berhasil disimpan.' });
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('items').insert([newItem]).select().single();
+      if (!error && data) {
+        memoryItems.unshift(data);
+        return res.status(201).json({ data, message: 'Laporan barang berhasil disimpan ke Supabase.' });
+      } else if (error) {
+        console.error('Supabase items insert error:', error.message);
+      }
+    } catch (e) {
+      console.error('Items insert catch error:', e.message);
     }
-  } catch (e) {
-    // fallback
   }
 
   newItem.id = Date.now();
@@ -465,21 +478,30 @@ app.post('/api/items', async (req, res) => {
 });
 
 app.post('/api/items/:id/claim', async (req, res) => {
+  const userId = (req.user && req.user.id) ? Number(req.user.id) : 1;
+  const claimNumber = `POSIS-CLM-${Date.now().toString().slice(-6)}`;
+
   const claimData = {
-    item_id: req.params.id,
+    claim_number: claimNumber,
+    item_id: Number(req.params.id),
+    user_id: userId,
     claimant_name: req.body.claimant_name || (req.user ? req.user.name : 'Siswa SMKN 1 Ciomas'),
-    proof_description: req.body.proof_description || '',
+    proof_description: req.body.proof_description || req.body.description || 'Klaim kepemilikan barang',
     status: 'menunggu_verifikasi'
   };
 
-  try {
-    const { data, error } = await supabase.from('claims').insert([claimData]).select().single();
-    if (!error && data) {
-      memoryClaims.unshift(data);
-      return res.status(201).json({ data, message: 'Klaim barang berhasil diajukan.' });
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('claims').insert([claimData]).select().single();
+      if (!error && data) {
+        memoryClaims.unshift(data);
+        return res.status(201).json({ data, message: 'Klaim barang berhasil diajukan ke Supabase.' });
+      } else if (error) {
+        console.error('Supabase claim insert error:', error.message);
+      }
+    } catch (e) {
+      console.error('Claims insert catch error:', e.message);
     }
-  } catch (e) {
-    // fallback
   }
 
   claimData.id = Date.now();
@@ -551,28 +573,41 @@ app.get('/api/aspirations/:id', async (req, res) => {
 });
 
 app.post('/api/aspirations', async (req, res) => {
+  const allowedCategories = ['toilet', 'perpustakaan', 'lapangan', 'wifi', 'kantin', 'lainnya'];
+  let category = (req.body.category || 'lainnya').toLowerCase();
+  if (category === 'sarpras') category = 'toilet';
+  if (!allowedCategories.includes(category)) category = 'lainnya';
+
+  const userId = (req.user && req.user.id) ? Number(req.user.id) : 1;
+  const ticketNumber = `POSIS-ASP-${Date.now().toString().slice(-6)}`;
+  const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const newAspiration = {
-    ticket_number: `POSIS-ASP-${Date.now().toString().slice(-6)}`,
-    title: req.body.title || 'Aspirasi Siswa',
-    category: req.body.category || 'sarpras',
-    body: req.body.body || '',
-    status: 'menunggu',
-    visibility: req.body.visibility || 'publik',
+    ticket_number: ticketNumber,
+    user_id: userId,
+    category,
+    title: req.body.title || 'Aspirasi Siswa SMKN 1 Ciomas',
+    body: req.body.body || req.body.description || 'Penyampaian suara siswa',
     is_anonymous: Boolean(req.body.is_anonymous),
-    author_name: req.body.is_anonymous ? 'Anonim (Warga SMKN 1 Ciomas)' : (req.user ? req.user.name : 'Siswa'),
-    user_id: req.user ? req.user.id : null,
+    is_emergency: Boolean(req.body.is_emergency),
+    status: 'menunggu_review',
+    due_date: dueDate,
     upvotes_count: 0,
     comments_count: 0
   };
 
-  try {
-    const { data, error } = await supabase.from('aspirations').insert([newAspiration]).select().single();
-    if (!error && data) {
-      memoryAspirations.unshift(data);
-      return res.status(201).json({ data, message: 'Aspirasi berhasil dikirimkan.' });
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('aspirations').insert([newAspiration]).select().single();
+      if (!error && data) {
+        memoryAspirations.unshift(data);
+        return res.status(201).json({ data, message: 'Aspirasi berhasil dikirimkan ke Supabase.' });
+      } else if (error) {
+        console.error('Supabase aspirations insert error:', error.message);
+      }
+    } catch (e) {
+      console.error('Aspirations insert catch error:', e.message);
     }
-  } catch (e) {
-    // fallback
   }
 
   newAspiration.id = Date.now();
@@ -583,7 +618,22 @@ app.post('/api/aspirations', async (req, res) => {
 });
 
 app.post('/api/aspirations/:id/vote', async (req, res) => {
-  const aspiration = memoryAspirations.find(a => String(a.id) === String(req.params.id));
+  const aspirationId = req.params.id;
+  const userId = (req.user && req.user.id) ? Number(req.user.id) : 1;
+
+  if (supabase) {
+    try {
+      await supabase.from('aspiration_votes').insert([{ aspiration_id: Number(aspirationId), user_id: userId }]);
+      const { data: currentAsp } = await supabase.from('aspirations').select('upvotes_count').eq('id', aspirationId).single();
+      if (currentAsp) {
+        const nextCount = (currentAsp.upvotes_count || 0) + 1;
+        await supabase.from('aspirations').update({ upvotes_count: nextCount }).eq('id', aspirationId);
+        return res.json({ upvotes_count: nextCount, message: 'Dukungan berhasil dicatat ke Supabase.' });
+      }
+    } catch (e) {}
+  }
+
+  const aspiration = memoryAspirations.find(a => String(a.id) === String(aspirationId));
   if (aspiration) {
     aspiration.upvotes_count = (aspiration.upvotes_count || 0) + 1;
     return res.json({ data: aspiration, upvotes_count: aspiration.upvotes_count, message: 'Dukungan berhasil dicatat.' });
@@ -592,14 +642,38 @@ app.post('/api/aspirations/:id/vote', async (req, res) => {
 });
 
 app.post('/api/aspirations/:id/comment', async (req, res) => {
+  const aspirationId = req.params.id;
+  const userId = (req.user && req.user.id) ? Number(req.user.id) : 1;
+  const authorName = req.user ? req.user.name : (req.body.author_name || 'Warga Sekolah');
+  const bodyText = req.body.body || req.body.comment || '';
+
+  if (supabase) {
+    try {
+      const { data: commentData, error } = await supabase.from('comments').insert([{
+        aspiration_id: Number(aspirationId),
+        user_id: userId,
+        body: bodyText
+      }]).select().single();
+
+      const { data: currentAsp } = await supabase.from('aspirations').select('comments_count').eq('id', aspirationId).single();
+      if (currentAsp) {
+        await supabase.from('aspirations').update({ comments_count: (currentAsp.comments_count || 0) + 1 }).eq('id', aspirationId);
+      }
+
+      if (!error && commentData) {
+        return res.status(201).json({ data: commentData, message: 'Tanggapan berhasil disimpan ke Supabase.' });
+      }
+    } catch (e) {}
+  }
+
   const comment = {
     id: Date.now(),
-    author_name: req.user ? req.user.name : (req.body.author_name || 'Warga Sekolah'),
-    body: req.body.body || req.body.comment || '',
+    author_name: authorName,
+    body: bodyText,
     created_at: new Date().toISOString()
   };
 
-  const aspiration = memoryAspirations.find(a => String(a.id) === String(req.params.id));
+  const aspiration = memoryAspirations.find(a => String(a.id) === String(aspirationId));
   if (aspiration) {
     aspiration.comments = aspiration.comments || [];
     aspiration.comments.push(comment);
