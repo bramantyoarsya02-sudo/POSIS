@@ -1,18 +1,14 @@
 # Dependencies
 node_modules/
-frontend/node_modules/
+
+# Next.js build output
+.next/
+out/
 
 # Environment files
 .env
 .env.*
 !.env.example
-frontend/.env.local
-frontend/.env.production
-
-# Build artifacts
-dist/
-frontend/dist/
-frontend/dist-ssr/
 
 # OS & Editor files
 .DS_Store

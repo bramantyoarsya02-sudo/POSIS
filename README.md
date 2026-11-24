@@ -1,56 +1,23 @@
 # POSIS — Pusat Olah Suara & Informasi Siswa
-### Portal Resmi SMK Negeri 1 Ciomas
+**SMK Negeri 1 Ciomas, Kabupaten Bogor**
 
-Aplikasi Lost & Found (Barang Hilang / Ditemukan) dan Kotak Saran / Aspirasi Siswa berbasis Web Modern (React + Node.js Express + Supabase PostgreSQL).
+Aplikasi web full-stack berbasis **Next.js (App Router)** dan **Supabase PostgreSQL** untuk layanan **Lost & Found Sekolah** dan **Kotak Saran / Aspirasi Siswa**.
 
----
+## Struktur Utama
+- `src/app/` — Halaman Next.js App Router (`/`, `/beranda`, `/lost-found`, `/aspirasi`, `/panduan-faq`, `/admin/dashboard`)
+- `src/app/api/` — Next.js API Route Handlers (`/api/auth/*`, `/api/items/*`, `/api/aspirations/*`, `/api/admin/*`, `/api/stats`, `/api/faqs`)
+- `src/lib/supabase/` — Klien Supabase (`client.js` & `server.js`)
+- `src/components/`, `src/views/`, `src/services/`, `src/contexts/` — Komponen UI & integrasi API
 
-## 🚀 Tech Stack
+## Menjalankan Secara Lokal
+```bash
+npm install
+npm run dev
+```
 
-- **Frontend:** React 19, Vite, Tailwind CSS, Framer Motion, React Router v7, Lucide Icons
-- **Backend:** Node.js, Express.js (Vercel Serverless Function)
-- **Database:** Supabase PostgreSQL (57 Akun Siswa & Guru terintegrasi)
-- **Hosting:** Vercel (Frontend & Serverless Backend dalam 1 Proyek)
-
----
-
-## 🔑 Environment Variables untuk Vercel:
-
-Tambahkan 2 variabel ini di **Project Settings -> Environment Variables** di Vercel:
-
-| Key | Value |
-| :--- | :--- |
-| `SUPABASE_URL` | `https://xfredskwnysatcxzzufx.supabase.co` |
-| `SUPABASE_KEY` | *(Gunakan sb_secret_... Supabase Anda)* |
-
----
-
-## 👥 Akun yang Siap Digunakan (57 Siswa Terdaftar):
-
-- **Administrator:** `admin@smkn1ciomas.sch.id` | Kata Sandi: `admin123`
-- **Siswa Uji Coba 1:** `siswa@smkn1ciomas.sch.id` (atau NISN: `0067823910`) | Kata Sandi: `siswa123`
-- **Pengurus OSIS:** `osis@smkn1ciomas.sch.id` (atau NISN: `0071293845`) | Kata Sandi: `adminosis123` / `siswa123`
-- **Petugas Piket:** `piket@smkn1ciomas.sch.id` | Kata Sandi: `adminpiket123` / `siswa123`
-- **Guru Pembina:** `guru@smkn1ciomas.sch.id` | Kata Sandi: `adminguru123` / `siswa123`
-- **Seluruh 50+ Siswa Lainnya:** Bisa login langsung menggunakan **NISN** atau **Email Siswa** (misal: `siswa01@smkn1ciomas.sch.id`, `0070001001`) dengan kata sandi: `siswa123`.
-
----
-
-## 🛠️ Jalankan Secara Lokal (Development)
-
-1. **Install Dependensi:**
-   ```bash
-   npm install
-   cd frontend && npm install && cd ..
-   ```
-
-2. **Jalankan Aplikasi:**
-   - Terminal 1 (Backend API):
-     ```bash
-     npm start
-     ```
-   - Terminal 2 (Frontend React):
-     ```bash
-     cd frontend
-     npm run dev
-     ```
+## Konfigurasi Environment Variable (`.env.local` / Vercel)
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xfredskwnysatcxzzufx.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_eyuWXvBfjG7j2CzOcYPhWQ_I8jM2bBJ
+```
+*(Opsional untuk server)* `SUPABASE_SERVICE_ROLE_KEY` dapat ditambahkan di Environment Variables Vercel.
