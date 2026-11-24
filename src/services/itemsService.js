@@ -60,27 +60,12 @@ export const itemsService = {
         body: formData
       });
       return res?.data || res;
-    } catch {
-      await new Promise(r => setTimeout(r, 400));
-      const newItem = {
-        id: Date.now(),
-        ticket_number: `POSIS-LF-202610-${String(localItems.length + 1).padStart(3, '0')}`,
-        title: formData.get('title') || 'Laporan Barang Baru',
-        type: formData.get('type') || 'hilang',
-        category: formData.get('category') || 'lainnya',
-        location: formData.get('location') || 'Lingkungan Sekolah',
-        event_date: formData.get('event_date') || new Date().toISOString().split('T')[0],
-        description: formData.get('description') || '',
-        photo_path: null,
-        handover_point: formData.get('handover_point') || null,
-        service_hours: formData.get('handover_point') ? 'Senin–Jumat 07:30 – 15:00 WIB' : null,
-        status: 'tersedia',
-        moderation_status: 'disetujui',
-        reported_by: 'Siswa SMKN 1 Ciomas',
-        created_at: new Date().toISOString()
-      };
-      localItems = [newItem, ...localItems];
-      return newItem;
+    } catch (err) {
+      if (err?.message || err?.errors) {
+        const errorDetail = err.errors ? Object.values(err.errors).flat().join(', ') : err.message;
+        throw new Error(errorDetail || 'Gagal menerbitkan laporan barang.');
+      }
+      throw err;
     }
   },
 

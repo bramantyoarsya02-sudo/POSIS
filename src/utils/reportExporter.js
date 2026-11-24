@@ -360,9 +360,9 @@ export const buildOverviewTableHtml = (dashboardData) => {
           <td class="text-center"><strong>${escapeHtml(asp.total ?? 0)}</strong></td>
         </tr>
         <tr>
-          <td><strong>Kunjungan &amp; Aktivitas Hari Ini</strong></td>
-          <td>Trafik Aktif Harian Portal POSIS</td>
-          <td class="text-center"><strong>${escapeHtml(stats.todayVisitors ?? 0)}</strong></td>
+          <td><strong>Data Panduan &amp; FAQ Resmi</strong></td>
+          <td>Pertanyaan Panduan Layanan POSIS Tersedia</td>
+          <td class="text-center"><strong>${escapeHtml(stats.totalFaqs ?? 0)}</strong></td>
         </tr>
       </tbody>
     </table>

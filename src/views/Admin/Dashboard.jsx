@@ -914,22 +914,25 @@ export function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* 4. Pengunjung Hari Ini */}
-                <div className="bg-white border-2 border-posis-blue p-5 rounded-[2px] editorial-shadow space-y-2">
+                {/* 4. Data Panduan & FAQ */}
+                <div
+                  onClick={() => setActiveMenu('faqs')}
+                  className="bg-white border-2 border-posis-blue p-5 rounded-[2px] editorial-shadow space-y-2 cursor-pointer hover:border-posis-gold transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs uppercase font-bold text-stone-500">
-                      Pengunjung Hari Ini
+                      Data Panduan &amp; FAQ
                     </span>
                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                      <Activity className="w-4 h-4" />
+                      <HelpCircle className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="text-3xl font-serif font-bold text-posis-ink">
-                    {overviewLoading ? '...' : dashboardData?.stats?.todayVisitors ?? 0}
+                    {overviewLoading ? '...' : dashboardData?.stats?.totalFaqs ?? 0}
                   </div>
                   <p className="font-mono text-[10px] text-emerald-700 font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                    Aktivitas sistem aktif hari ini
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                    Pertanyaan panduan resmi tersedia
                   </p>
                 </div>
               </div>

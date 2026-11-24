@@ -4,12 +4,56 @@ import { getAuthUser } from '@/lib/auth';
 
 const ALLOWED_CATEGORIES = ['alat_tulis', 'elektronik', 'pakaian', 'berkas', 'lainnya'];
 const ALLOWED_HANDOVER_POINTS = ['ruang_piket', 'ruang_bk', 'pos_satpam'];
+const STORAGE_BUCKET = 'posis-items';
 
 async function getUserMap() {
   const { data } = await supabase.from('users').select('id, name, class_or_division');
   const map = new Map();
   (data || []).forEach((u) => map.set(u.id, u));
   return map;
+}
+
+async function uploadItemPhoto(photoFile, ticketNumber) {
+  if (!photoFile || typeof photoFile !== 'object' || typeof photoFile.arrayBuffer !== 'function' || photoFile.size <= 0) {
+    return null;
+  }
+
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const exists = (buckets || []).some((b) => b.name === STORAGE_BUCKET);
+    if (!exists) {
+      await supabase.storage.createBucket(STORAGE_BUCKET, {
+        public: true,
+        fileSizeLimit: 5 * 1024 * 1024,
+      });
+    }
+
+    const mime = photoFile.type || 'image/jpeg';
+    const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+    const filePath = `${ticketNumber}-${Date.now()}.${ext}`;
+    const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+
+    const { error: uploadErr } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(filePath, fileBuffer, {
+        contentType: mime,
+        upsert: true,
+      });
+
+    if (uploadErr) {
+      console.error('Supabase Storage upload error:', uploadErr.message);
+      return null;
+    }
+
+    const { data: publicData } = supabase.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(filePath);
+
+    return publicData?.publicUrl || null;
+  } catch (err) {
+    console.error('Photo upload helper error:', err.message);
+    return null;
+  }
 }
 
 export async function GET(request) {
@@ -64,6 +108,8 @@ export async function POST(request) {
     const contentType = request.headers.get('content-type') || '';
 
     let payload = {};
+    let photoFile = null;
+
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       payload = {
@@ -75,6 +121,7 @@ export async function POST(request) {
         description: formData.get('description'),
         handover_point: formData.get('handover_point'),
       };
+      photoFile = formData.get('photo');
     } else {
       payload = await request.json();
     }
@@ -99,6 +146,13 @@ export async function POST(request) {
     const nowIso = new Date().toISOString();
     const ticketNumber = `POSIS-LF-${Date.now().toString().slice(-6)}`;
 
+    let uploadedPhotoUrl = null;
+    if (photoFile) {
+      uploadedPhotoUrl = await uploadItemPhoto(photoFile, ticketNumber);
+    } else if (payload.photo_path && typeof payload.photo_path === 'string' && payload.photo_path.length <= 255) {
+      uploadedPhotoUrl = payload.photo_path;
+    }
+
     const newItem = {
       ticket_number: ticketNumber,
       user_id: userId,
@@ -108,7 +162,7 @@ export async function POST(request) {
       location: String(payload.location || 'Area SMKN 1 Ciomas').slice(0, 150),
       event_date: payload.event_date || nowIso.split('T')[0],
       description: String(payload.description || payload.title || 'Laporan barang POSIS'),
-      photo_path: null,
+      photo_path: uploadedPhotoUrl,
       handover_point: handoverPoint,
       service_hours: handoverPoint ? serviceHoursMap[handoverPoint] : null,
       status: 'tersedia',
@@ -146,4 +200,3 @@ export async function POST(request) {
     );
   }
 }
-

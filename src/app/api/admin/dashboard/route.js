@@ -3,10 +3,11 @@ import { supabase } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const [{ data: users }, { data: items }, { data: aspirations }] = await Promise.all([
+    const [{ data: users }, { data: items }, { data: aspirations }, { count: faqCount }] = await Promise.all([
       supabase.from('users').select('id, name, class_or_division, role, created_at'),
       supabase.from('items').select('*').order('created_at', { ascending: false }),
       supabase.from('aspirations').select('*').order('created_at', { ascending: false }),
+      supabase.from('faqs').select('*', { count: 'exact', head: true }),
     ]);
 
     const userMap = new Map();
@@ -59,7 +60,7 @@ export async function GET() {
             diproses: aspList.filter((a) => a.status === 'diproses').length,
             selesai: aspList.filter((a) => a.status === 'ditindaklanjuti').length,
           },
-          todayVisitors: Math.max(1, studentCount),
+          totalFaqs: faqCount || 0,
         },
         monthlyTrends: [
           { month: 'Sep', lostFound: Math.max(2, itemsList.length), aspirations: Math.max(3, aspList.length) },

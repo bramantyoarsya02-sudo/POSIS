@@ -13,7 +13,7 @@ export const adminService = {
           totalStudents: 1,
           lostFound: { total: 3, hilang: 1, ditemukan: 2, selesai: 0 },
           aspirations: { total: 2, baru: 0, diproses: 1, selesai: 1 },
-          todayVisitors: 1,
+          totalFaqs: 3,
         },
         monthlyTrends: [],
         recentActivities: [
